@@ -8,11 +8,11 @@ export enum AppStep {
 }
 
 export enum Goal {
-  FAT_LOSS = 'Fat Loss',
-  MUSCLE_GAIN = 'Muscle Gain',
-  IMPROVE_ENDURANCE = 'Improve Endurance',
-  INCREASE_FLEXIBILITY = 'Increase Flexibility',
-  GENERAL_FITNESS = 'General Fitness'
+  FAT_LOSS = 'Perda de Gordura',
+  MUSCLE_GAIN = 'Ganho Muscular',
+  IMPROVE_ENDURANCE = 'Melhorar Resistência',
+  INCREASE_FLEXIBILITY = 'Aumentar Flexibilidade',
+  GENERAL_FITNESS = 'Fitness Geral'
 }
 
 export interface UserGoals {

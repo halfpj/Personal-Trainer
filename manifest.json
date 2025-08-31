@@ -1,7 +1,7 @@
 {
-  "short_name": "AI Trainer",
-  "name": "AI Personal Trainer",
-  "description": "An advanced fitness application that uses AI for personalized body analysis and custom workout plan generation.",
+  "short_name": "Treinador IA",
+  "name": "Treinador Pessoal IA",
+  "description": "Uma aplicação de fitness avançada que utiliza IA para análise corporal personalizada e geração de planos de treino personalizados.",
   "icons": [
     {
       "src": "/icon-192x192.png",

@@ -1,6 +1,6 @@
 {
-  "name": "PT WTFIM",
-  "description": "An advanced fitness application that uses AI for personalized body analysis, custom workout plan generation, and an AI-powered exercise library with demonstrative images.",
+  "name": "Treinador Pessoal IA",
+  "description": "Uma aplicação de fitness avançada que utiliza IA para análise corporal personalizada, geração de planos de treino personalizados e uma biblioteca de exercícios com imagens demonstrativas alimentada por IA.",
   "requestFramePermissions": [
     "camera"
   ]

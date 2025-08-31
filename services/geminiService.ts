@@ -1,4 +1,5 @@
 
+
 import { GoogleGenAI, Type } from "@google/genai";
 import type { BodyAnalysis, Exercise, UserGoals, WorkoutPlan } from '../types';
 
@@ -15,43 +16,43 @@ const workoutPlanSchema = {
   properties: {
     planSummary: {
       type: Type.STRING,
-      description: "A 2-3 sentence motivational summary of the workout plan, explaining its focus and expected benefits for the user."
+      description: "Um resumo motivacional de 2-3 frases do plano de treino, explicando o seu foco e os benefícios esperados para o utilizador."
     },
     weeklyPlan: {
       type: Type.ARRAY,
-      description: "A 5-day workout plan for the week. Include 2 rest days.",
+      description: "Um plano de treino de 5 dias para a semana. Inclui 2 dias de descanso.",
       items: {
         type: Type.OBJECT,
         properties: {
           day: {
             type: Type.STRING,
-            description: "Day of the week (e.g., 'Monday', 'Tuesday')."
+            description: "Dia da semana (ex: 'Segunda-feira', 'Terça-feira')."
           },
           focus: {
             type: Type.STRING,
-            description: "The main focus of the day's workout (e.g., 'Upper Body Strength', 'Full Body Conditioning', 'Active Recovery'). Use 'Rest Day' for non-workout days."
+            description: "O foco principal do treino do dia (ex: 'Força do Tronco Superior', 'Condicionamento de Corpo Inteiro', 'Recuperação Ativa'). Usa 'Dia de Descanso' para dias sem treino."
           },
           exercises: {
             type: Type.ARRAY,
-            description: "List of exercises for the day. Should be empty if it's a Rest Day.",
+            description: "Lista de exercícios para o dia. Deve estar vazia se for um Dia de Descanso.",
             items: {
               type: Type.OBJECT,
               properties: {
                 name: {
                   type: Type.STRING,
-                  description: "Name of the exercise."
+                  description: "Nome do exercício."
                 },
                 sets: {
                   type: Type.INTEGER,
-                  description: "Number of sets."
+                  description: "Número de séries."
                 },
                 reps: {
                   type: Type.STRING,
-                  description: "Number of repetitions per set (e.g., '10-12', 'AMRAP 15min')."
+                  description: "Número de repetições por série (ex: '10-12', 'AMRAP 15min')."
                 },
                 rest: {
                   type: Type.INTEGER,
-                  description: "Rest time in seconds between sets."
+                  description: "Tempo de descanso em segundos entre as séries."
                 }
               },
               required: ["name", "sets", "reps", "rest"]
@@ -70,11 +71,11 @@ const bodyAnalysisSchema = {
     properties: {
         analysis: {
             type: Type.STRING,
-            description: "A detailed but encouraging fitness-focused analysis of the user's physique based on the image. Do not provide medical advice or exact measurements. Describe general body type, apparent muscle development (e.g., 'well-defined shoulders'), and posture. Keep the tone positive and motivational. Maximum 3 sentences."
+            description: "Uma análise detalhada mas encorajadora, focada no fitness, do físico do utilizador com base na imagem. Não forneças conselhos médicos ou medidas exatas. Descreve o tipo de corpo geral, desenvolvimento muscular aparente (ex: 'ombros bem definidos') e postura. Mantém o tom positivo e motivacional. Máximo de 3 frases."
         },
         focusAreas: {
             type: Type.ARRAY,
-            description: "A list of 2-3 general fitness areas to focus on for a balanced physique (e.g., 'Core Strength', 'Lower Body Power', 'Posture Improvement').",
+            description: "Uma lista de 2-3 áreas gerais de fitness para focar para um físico equilibrado (ex: 'Força do Core', 'Potência dos Membros Inferiores', 'Melhoria da Postura').",
             items: {
                 type: Type.STRING
             }
@@ -96,7 +97,7 @@ const fileToGenerativePart = async (file: string) => {
 
 export const analyzeBodyFromImage = async (base64Image: string): Promise<BodyAnalysis> => {
     const imagePart = await fileToGenerativePart(base64Image);
-    const prompt = "Analyze the physique in this photo from a fitness perspective. Respond in JSON format according to the provided schema.";
+    const prompt = "Analisa o físico nesta foto de uma perspetiva de fitness. Responde em Português de Portugal e em formato JSON de acordo com o esquema fornecido.";
     
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -112,17 +113,20 @@ export const analyzeBodyFromImage = async (base64Image: string): Promise<BodyAna
 };
 
 export const generateWorkoutPlan = async (analysis: string, goals: UserGoals): Promise<WorkoutPlan> => {
+    const analysisSection = analysis
+        ? `**Análise de Fitness do Utilizador (com base na foto):**\n${analysis}`
+        : `**Contexto do Utilizador:**\nNenhuma análise de foto foi fornecida. O plano deve ser criado com base apenas nos objetivos do utilizador.`;
+
     const prompt = `
-    Based on the following user information, create a personalized 5-day weekly workout plan. The user has 2 rest days.
+    Cria um plano de treino semanal personalizado de 5 dias com base na seguinte informação do utilizador. O utilizador tem 2 dias de descanso.
 
-    **User Fitness Analysis:**
-    ${analysis}
+    ${analysisSection}
 
-    **User Goals:**
-    - Primary Goal: ${goals.primaryGoal}
-    - Secondary Goals: ${goals.secondaryGoals.join(', ')}
+    **Objetivos do Utilizador:**
+    - Objetivo Principal: ${goals.primaryGoal}
+    - Objetivos Secundários: ${goals.secondaryGoals.join(', ')}
 
-    Please generate a structured workout plan in JSON format that follows the provided schema. The plan should be challenging but achievable, and tailored to the user's goals and analysis.
+    Por favor, gera um plano de treino estruturado em formato JSON que siga o esquema fornecido. O plano deve ser desafiador mas alcançável, e adaptado aos objetivos e (se disponível) à análise do utilizador. O plano e todos os seus conteúdos devem estar em Português de Portugal.
     `;
 
     const response = await ai.models.generateContent({
@@ -141,12 +145,12 @@ export const generateWorkoutPlan = async (analysis: string, goals: UserGoals): P
 export const getExerciseDetails = async (exerciseName: string): Promise<Pick<Exercise, 'description' | 'image'>> => {
     const descriptionPromise = ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: `Provide a concise, step-by-step guide on how to perform a "${exerciseName}". Include tips for proper form and common mistakes to avoid. Use markdown for formatting.`
+        contents: `Fornece um guia conciso, passo a passo, sobre como executar um(a) "${exerciseName}". Inclui dicas para a forma correta e erros comuns a evitar. Usa markdown para formatação. Responde em Português de Portugal.`
     });
 
     const imagePromise = ai.models.generateImages({
         model: 'imagen-4.0-generate-001',
-        prompt: `Fitness exercise illustration of a person doing a "${exerciseName}". Clear, anatomical, diagrammatic style, showing correct form. White background, simple lines, gender-neutral figure.`,
+        prompt: `Ilustração de exercício de fitness de uma pessoa a fazer "${exerciseName}". Estilo de diagrama claro, anatómico, mostrando a forma correta. Fundo branco, linhas simples, figura de género neutro.`,
         config: {
             numberOfImages: 1,
             outputMimeType: 'image/jpeg',

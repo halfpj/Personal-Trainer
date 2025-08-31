@@ -62,7 +62,7 @@ const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({ exercise, onC
 
         // 2. If not in cache, check network connection
         if (!navigator.onLine) {
-            setError("You are offline and these exercise details are not cached.");
+            setError("Está offline e estes detalhes do exercício não estão em cache.");
             setIsLoading(false);
             return;
         }
@@ -78,7 +78,7 @@ const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({ exercise, onC
 
       } catch (err) {
         console.error("Failed to fetch exercise details:", err);
-        setError("Could not load exercise details. Please try again later.");
+        setError("Não foi possível carregar os detalhes do exercício. Por favor, tente novamente mais tarde.");
       } finally {
         setIsLoading(false);
       }
@@ -105,13 +105,13 @@ const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({ exercise, onC
         <div className="p-8">
             <h2 className="text-3xl font-bold text-white mb-2">{exercise.name}</h2>
             <p className="text-indigo-400 font-semibold mb-6">
-                {exercise.sets} sets &times; {exercise.reps} reps &bull; {exercise.rest}s rest
+                {exercise.sets} séries &times; {exercise.reps} reps &bull; {exercise.rest}s descanso
             </p>
 
             {isLoading && (
                 <div className="flex flex-col items-center justify-center min-h-[300px]">
                     <IconLoader className="w-12 h-12" />
-                    <p className="mt-4 text-gray-400">Loading exercise details...</p>
+                    <p className="mt-4 text-gray-400">A carregar detalhes do exercício...</p>
                 </div>
             )}
             {error && <p className="text-red-500 text-center py-10">{error}</p>}
@@ -119,11 +119,11 @@ const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({ exercise, onC
             {!isLoading && !error && details && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                     <div className="w-full h-auto aspect-square bg-gray-700 rounded-lg flex items-center justify-center">
-                        {details.image ? <img src={details.image} alt={`AI generated image for ${exercise.name}`} className="rounded-lg object-cover w-full h-full" /> : <p>Image not available</p>}
+                        {details.image ? <img src={details.image} alt={`Imagem gerada por IA para ${exercise.name}`} className="rounded-lg object-cover w-full h-full" /> : <p>Imagem não disponível</p>}
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold mb-3 text-white">How to perform:</h3>
-                        {details.description ? <MarkdownRenderer text={details.description} /> : <p>No description available.</p>}
+                        <h3 className="text-xl font-bold mb-3 text-white">Como executar:</h3>
+                        {details.description ? <MarkdownRenderer text={details.description} /> : <p>Nenhuma descrição disponível.</p>}
                     </div>
                 </div>
             )}

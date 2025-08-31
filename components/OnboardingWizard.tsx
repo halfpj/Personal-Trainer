@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback } from 'react';
 import { AppStep, Goal, UserGoals } from '../types';
 import { IconUpload } from './icons/IconUpload';
@@ -8,6 +9,7 @@ interface OnboardingWizardProps {
   currentStep: AppStep;
   onGoalsSubmit: (goals: UserGoals) => void;
   onPhotosSubmit: (photos: string[]) => void;
+  onSkipPhotos: () => void;
 }
 
 const goalsOptions: Goal[] = [
@@ -18,7 +20,7 @@ const goalsOptions: Goal[] = [
   Goal.GENERAL_FITNESS,
 ];
 
-const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ currentStep, onGoalsSubmit, onPhotosSubmit }) => {
+const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ currentStep, onGoalsSubmit, onPhotosSubmit, onSkipPhotos }) => {
   const [selectedPrimaryGoal, setSelectedPrimaryGoal] = useState<Goal | null>(null);
   const [selectedSecondaryGoals, setSelectedSecondaryGoals] = useState<Goal[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
@@ -67,8 +69,8 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ currentStep, onGoal
   if (currentStep === AppStep.GOALS) {
     return (
       <div className="w-full max-w-3xl mx-auto bg-gray-800 p-8 rounded-xl shadow-2xl">
-        <h2 className="text-3xl font-bold text-center mb-2 text-white">What's Your Primary Goal?</h2>
-        <p className="text-center text-gray-400 mb-8">Select one main objective to focus on.</p>
+        <h2 className="text-3xl font-bold text-center mb-2 text-white">Qual é o Seu Objetivo Principal?</h2>
+        <p className="text-center text-gray-400 mb-8">Selecione um objetivo principal para se focar.</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
           {goalsOptions.map(goal => (
             <button
@@ -85,8 +87,8 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ currentStep, onGoal
           ))}
         </div>
 
-        <h3 className="text-2xl font-bold text-center mb-2 text-white">Any Secondary Goals?</h3>
-        <p className="text-center text-gray-400 mb-8">Select up to two other areas you'd like to improve.</p>
+        <h3 className="text-2xl font-bold text-center mb-2 text-white">Algum Objetivo Secundário?</h3>
+        <p className="text-center text-gray-400 mb-8">Selecione até duas outras áreas que gostaria de melhorar.</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
             {goalsOptions.filter(g => g !== selectedPrimaryGoal).map(goal => (
                 <button
@@ -110,7 +112,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ currentStep, onGoal
             disabled={!selectedPrimaryGoal}
             className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
-            Next: Upload Photo
+            Seguinte: Carregar Foto
           </button>
         </div>
       </div>
@@ -120,8 +122,8 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ currentStep, onGoal
   if (currentStep === AppStep.PHOTOS) {
     return (
       <div className="w-full max-w-3xl mx-auto bg-gray-800 p-8 rounded-xl shadow-2xl">
-        <h2 className="text-3xl font-bold text-center mb-2 text-white">AI Physique Analysis</h2>
-        <p className="text-center text-gray-400 mb-8">Upload a full-body photo for our AI to analyze. This helps create a truly personalized plan. Your photo is private and used only for this analysis.</p>
+        <h2 className="text-3xl font-bold text-center mb-2 text-white">Análise de Físico por IA (Opcional)</h2>
+        <p className="text-center text-gray-400 mb-8">Carregue uma foto de corpo inteiro para a nossa IA analisar. Isto ajuda a criar um plano verdadeiramente personalizado. A sua foto é privada e usada apenas para esta análise.</p>
         
         <div className="flex justify-center items-center w-full">
             <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-700 hover:bg-gray-600 transition-colors">
@@ -135,8 +137,8 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ currentStep, onGoal
                 ) : (
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <IconUpload className="w-10 h-10 mb-4 text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                        <p className="text-xs text-gray-500">PNG, JPG, or JPEG</p>
+                        <p className="mb-2 text-sm text-gray-400"><span className="font-semibold">Clique para carregar</span> ou arraste e largue</p>
+                        <p className="text-xs text-gray-500">PNG, JPG ou JPEG</p>
                     </div>
                 )}
                 <input id="dropzone-file" type="file" className="hidden" accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} />
@@ -149,8 +151,16 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ currentStep, onGoal
             disabled={photos.length === 0}
             className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
-            Analyze & Build My Plan
+            Analisar e Criar o Meu Plano
           </button>
+          <div className="mt-4">
+             <button
+                onClick={onSkipPhotos}
+                className="text-gray-400 hover:text-white font-semibold py-2 px-4 transition-colors rounded-lg"
+              >
+                Ignorar e criar plano geral
+              </button>
+          </div>
         </div>
       </div>
     );
