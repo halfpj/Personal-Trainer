@@ -1,5 +1,5 @@
 {
-  "name": "AI Personal Trainer",
+  "name": "PT WTFIM",
   "description": "An advanced fitness application that uses AI for personalized body analysis, custom workout plan generation, and an AI-powered exercise library with demonstrative images.",
   "requestFramePermissions": [
     "camera"
