@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import OnboardingWizard from './components/OnboardingWizard';
 import WorkoutDashboard from './components/WorkoutDashboard';
 import { BodyAnalysis, Goal, UserGoals, WorkoutPlan, AppStep } from './types';
@@ -16,8 +15,30 @@ const App: React.FC = () => {
   const [bodyAnalysis, setBodyAnalysis] = useState<BodyAnalysis | null>(null);
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start true to check cache
   const [loadingMessage, setLoadingMessage] = useState('');
+
+  useEffect(() => {
+    // On app load, check for cached workout data
+    try {
+      const cachedPlan = localStorage.getItem('workoutPlan');
+      const cachedAnalysis = localStorage.getItem('bodyAnalysis');
+
+      if (cachedPlan && cachedAnalysis) {
+        setWorkoutPlan(JSON.parse(cachedPlan));
+        setBodyAnalysis(JSON.parse(cachedAnalysis));
+        setStep(AppStep.DASHBOARD);
+      }
+    } catch (e) {
+      console.error("Failed to parse cached data", e);
+      // Clear potentially corrupt data
+      localStorage.removeItem('workoutPlan');
+      localStorage.removeItem('bodyAnalysis');
+    } finally {
+      setIsLoading(false); // Done checking cache
+    }
+  }, []);
+
 
   const handleStart = () => {
     setStep(AppStep.GOALS);
@@ -33,20 +54,30 @@ const App: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
+    if (!navigator.onLine) {
+        setError('You are offline. Please connect to the internet to generate a new plan.');
+        setIsLoading(false);
+        return;
+    }
+
     try {
       setLoadingMessage('Analyzing your physique...');
       setStep(AppStep.ANALYZING);
       const analysisResult = await analyzeBodyFromImage(images[0]); // Using first image for analysis
       setBodyAnalysis(analysisResult);
+      localStorage.setItem('bodyAnalysis', JSON.stringify(analysisResult));
+
 
       setLoadingMessage('Generating your personalized workout plan...');
       const plan = await generateWorkoutPlan(analysisResult.analysis, userGoals);
       setWorkoutPlan(plan);
+      localStorage.setItem('workoutPlan', JSON.stringify(plan));
 
       setStep(AppStep.DASHBOARD);
     } catch (err) {
       console.error(err);
-      setError('An error occurred during AI analysis. Please try again.');
+      const errorMessage = 'An error occurred during AI analysis. Please try again.';
+      setError(errorMessage);
       setStep(AppStep.PHOTOS); // Go back to photos step on error
     } finally {
       setIsLoading(false);
@@ -55,6 +86,7 @@ const App: React.FC = () => {
   }, [userGoals]);
   
   const resetApp = () => {
+    // Clear state
     setStep(AppStep.WELCOME);
     setUserGoals({ primaryGoal: null, secondaryGoals: [] });
     setUserImages([]);
@@ -62,9 +94,22 @@ const App: React.FC = () => {
     setWorkoutPlan(null);
     setError(null);
     setIsLoading(false);
+
+    // Clear cache
+    localStorage.removeItem('workoutPlan');
+    localStorage.removeItem('bodyAnalysis');
   };
 
   const renderContent = () => {
+    if (isLoading && step === AppStep.WELCOME) {
+        return (
+             <div className="text-center">
+                <IconSparkles className="w-12 h-12 text-indigo-400 mx-auto animate-pulse" />
+                <h1 className="text-3xl font-bold mt-4">Loading Your Fitness Hub...</h1>
+            </div>
+        )
+    }
+
     switch (step) {
       case AppStep.WELCOME:
         return (
@@ -105,8 +150,8 @@ const App: React.FC = () => {
           return <WorkoutDashboard workoutPlan={workoutPlan} bodyAnalysis={bodyAnalysis} onReset={resetApp} />;
         }
         // Fallback if data is missing
-        setError("Workout plan could not be generated. Please start over.");
-        setStep(AppStep.WELCOME);
+        setError("Workout plan could not be loaded. Please start over.");
+        resetApp(); // Reset to clear any inconsistent state
         return null;
       default:
         return <div>Invalid step</div>;

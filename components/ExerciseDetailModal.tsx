@@ -8,8 +8,6 @@ interface ExerciseDetailModalProps {
   onClose: () => void;
 }
 
-// FIX: Replaced the naive MarkdownRenderer with a more robust version.
-// The original created invalid HTML for lists and was not robust to variations in AI output.
 const MarkdownRenderer = ({ text }: { text: string }) => {
     const safeText = String(text || '');
 
@@ -18,10 +16,8 @@ const MarkdownRenderer = ({ text }: { text: string }) => {
     let inList = false;
 
     for (const line of lines) {
-        // Handle bolding within any line
         let processedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-        // Handle list items
         if (processedLine.trim().startsWith('* ')) {
             if (!inList) {
                 htmlContent += '<ul>';
@@ -48,17 +44,38 @@ const MarkdownRenderer = ({ text }: { text: string }) => {
 
 
 const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({ exercise, onClose }) => {
-  const [details, setDetails] = useState<Pick<Exercise, 'description' | 'image'>> | null>(null);
+  const [details, setDetails] = useState<Pick<Exercise, 'description' | 'image'> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDetails = async () => {
+      const cacheKey = `exercise-details-${exercise.name}`;
       try {
+        // 1. Check cache first
+        const cachedDetails = localStorage.getItem(cacheKey);
+        if (cachedDetails) {
+          setDetails(JSON.parse(cachedDetails));
+          setIsLoading(false);
+          return;
+        }
+
+        // 2. If not in cache, check network connection
+        if (!navigator.onLine) {
+            setError("You are offline and these exercise details are not cached.");
+            setIsLoading(false);
+            return;
+        }
+
+        // 3. Fetch from network
         setIsLoading(true);
         setError(null);
         const fetchedDetails = await getExerciseDetails(exercise.name);
         setDetails(fetchedDetails);
+
+        // 4. Cache the new data
+        localStorage.setItem(cacheKey, JSON.stringify(fetchedDetails));
+
       } catch (err) {
         console.error("Failed to fetch exercise details:", err);
         setError("Could not load exercise details. Please try again later.");
@@ -94,19 +111,19 @@ const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({ exercise, onC
             {isLoading && (
                 <div className="flex flex-col items-center justify-center min-h-[300px]">
                     <IconLoader className="w-12 h-12" />
-                    <p className="mt-4 text-gray-400">Generating exercise details...</p>
+                    <p className="mt-4 text-gray-400">Loading exercise details...</p>
                 </div>
             )}
-            {error && <p className="text-red-500 text-center">{error}</p>}
+            {error && <p className="text-red-500 text-center py-10">{error}</p>}
             
             {!isLoading && !error && details && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                     <div className="w-full h-auto aspect-square bg-gray-700 rounded-lg flex items-center justify-center">
-                        {details.image && <img src={details.image} alt={`AI generated image for ${exercise.name}`} className="rounded-lg object-cover w-full h-full" />}
+                        {details.image ? <img src={details.image} alt={`AI generated image for ${exercise.name}`} className="rounded-lg object-cover w-full h-full" /> : <p>Image not available</p>}
                     </div>
                     <div>
                         <h3 className="text-xl font-bold mb-3 text-white">How to perform:</h3>
-                        {details.description && <MarkdownRenderer text={details.description} />}
+                        {details.description ? <MarkdownRenderer text={details.description} /> : <p>No description available.</p>}
                     </div>
                 </div>
             )}

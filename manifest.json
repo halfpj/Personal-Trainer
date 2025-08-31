@@ -1,0 +1,21 @@
+{
+  "short_name": "AI Trainer",
+  "name": "AI Personal Trainer",
+  "description": "An advanced fitness application that uses AI for personalized body analysis and custom workout plan generation.",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#111827",
+  "background_color": "#111827"
+}
